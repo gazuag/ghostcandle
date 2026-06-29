@@ -100,7 +100,14 @@ export default function Dashboard() {
     store.setIsTraining(true);
     store.setTrainingProgress(0);
     store.setTrainingLoss(null);
-    const model = await trainModel(candles, Math.min(10, Math.max(5, Math.floor(numFutureCandles / 2))));
+    const model = await trainModel(
+      candles,
+      Math.min(10, Math.max(5, Math.floor(numFutureCandles / 2))),
+      (progress, loss) => {
+        store.setTrainingProgress(progress);
+        if (typeof loss === 'number') store.setTrainingLoss(loss);
+      }
+    );
     saveModelToCache(CACHE_KEY, model);
     store.setModelData(model);
     store.setIsTraining(false);
@@ -129,7 +136,8 @@ export default function Dashboard() {
         clamp(c.volume / avgVolume / 5, 0, 1),
       ];
     });
-    const result = runMonteCarlo(modelData, lastWindow, numFutureCandles, numSimulations);
+    const lastClose = slice[slice.length - 1].close;
+    const result = runMonteCarlo(modelData, lastWindow, numFutureCandles, numSimulations, lastClose);
     store.setPredictions(result);
     store.setIsRunningPrediction(false);
   };

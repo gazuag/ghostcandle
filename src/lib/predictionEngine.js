@@ -200,7 +200,7 @@ function computeGradients(model, inputVector, target) {
   return { dW3, db3, dW2, db2, dW1, db1 };
 }
 
-export async function trainModel(candles, outputSteps) {
+export async function trainModel(candles, outputSteps, onProgress) {
   const data = createTrainingData(candles, outputSteps);
   const model = makeModel(outputSteps);
   if (!data.length) return { model, outputSteps, lastFeatures: null, loss: 0 };
@@ -218,6 +218,9 @@ export async function trainModel(candles, outputSteps) {
       updateParameters(model, grads, lr);
     }
     loss = epochLoss / data.length;
+    if (typeof onProgress === 'function') {
+      try { onProgress(Math.round(((epoch + 1) / EPOCHS) * 100), loss); } catch (e) { /* ignore */ }
+    }
   }
 
   const lastWindow = candles.slice(-INPUT_WINDOW);
@@ -241,23 +244,38 @@ function decodeOutput(output, lastClose) {
   return predictions;
 }
 
-export function runMonteCarlo(modelData, lastWindow, numFutureCandles, runs) {
-  if (!modelData || !modelData.model || !lastWindow.length) return null;
+export function runMonteCarlo(modelData, lastWindow, numFutureCandles, runs, lastCloseOverride = null) {
+  if (!modelData || !modelData.model) return null;
   const { model, outputSteps } = modelData;
+  if (!lastWindow || !lastWindow.length) return null;
+  // Determine if lastWindow contains feature arrays or raw candles
+  let baseFeatures = [];
+  let originalLastClose = lastCloseOverride || 0;
+  if (Array.isArray(lastWindow[0]) && typeof lastWindow[0][0] === 'number') {
+    // lastWindow is an array of feature arrays
+    baseFeatures = lastWindow.flat();
+  } else if (lastWindow[0] && typeof lastWindow[0] === 'object' && 'close' in lastWindow[0]) {
+    // lastWindow is an array of candle objects; compute features
+    const avgVolume = lastWindow.slice(-20).reduce((sum, row) => sum + (row.volume || 0), 0) / Math.min(20, lastWindow.length) || 1;
+    baseFeatures = lastWindow.map((c, idx) => computeFeatures(c, idx > 0 ? lastWindow[idx - 1] : lastWindow[0], avgVolume)).flat();
+    originalLastClose = lastWindow.slice(-1)[0].close;
+  }
+  if (lastCloseOverride) originalLastClose = lastCloseOverride;
+
   const simulations = [];
-  const baseFeatures = lastWindow.flat();
+  const effectiveDirect = Math.min(outputSteps, MAX_DIRECT_STEPS, numFutureCandles);
   for (let s = 0; s < runs; s += 1) {
     let features = [...baseFeatures];
     const prediction = [];
-    let lastClose = lastWindow.slice(-1)[0][0] || 0;
-    const effectiveDirect = Math.min(outputSteps, MAX_DIRECT_STEPS, numFutureCandles);
+    let lastClose = originalLastClose || 0;
     for (let step = 0; step < numFutureCandles; step += 1) {
-      const noisyInput = features.map((value, idx) => clamp(value + randn() * 0.02 * (step + 1) / numFutureCandles, 0, 1));
+      const noisyInput = features.map((value) => clamp(value + randn() * 0.02 * (step + 1) / numFutureCandles, 0, 1));
       const { output } = forward(model, noisyInput);
+      // use first two outputs for this step
       const stepOutput = output.slice(0, 2);
       const decoded = decodeOutput(stepOutput, lastClose)[0];
       const reconstructed = {
-        time: Date.now() / 1000 + 60 * 60 * 24 * (step + 1),
+        time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * (step + 1),
         open: lastClose,
         high: decoded.high,
         low: decoded.low,
@@ -268,9 +286,7 @@ export function runMonteCarlo(modelData, lastWindow, numFutureCandles, runs) {
       lastClose = decoded.close;
       const nextFeatures = computeFeatures(reconstructed, { close: reconstructed.open, high: reconstructed.high, low: reconstructed.low, open: reconstructed.open, volume: reconstructed.volume }, 1);
       features = [...features.slice(FEATURES), ...nextFeatures];
-      if (step >= effectiveDirect) {
-        continue;
-      }
+      // continue generating regardless; effectiveDirect currently unused for truncation
     }
     simulations.push(prediction);
   }
@@ -285,11 +301,11 @@ export function runMonteCarlo(modelData, lastWindow, numFutureCandles, runs) {
     const meanHigh = highs.reduce((sum, value) => sum + value, 0) / highs.length;
     const meanLow = lows.reduce((sum, value) => sum + value, 0) / lows.length;
     aggregated.push({
-      time: Date.now() / 1000 + 60 * 60 * 24 * (i + 1),
+      time: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * (i + 1),
       close: meanClose,
       high: meanHigh,
       low: meanLow,
-      open: i === 0 ? lastWindow.slice(-1)[0][0] : aggregated[i - 1].close,
+      open: i === 0 ? (originalLastClose || 0) : aggregated[i - 1].close,
       volume: volumes.reduce((sum, value) => sum + value, 0) / volumes.length,
       confidenceHigh: percentile(closes, 0.8),
       confidenceLow: percentile(closes, 0.2),

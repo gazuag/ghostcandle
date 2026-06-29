@@ -1,3 +1,12 @@
-2026/06/29-18:54:32.511 1d547b2 Reusing MANIFEST /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/MANIFEST-000001
-2026/06/29-18:54:32.514 1d547b2 Recovering log #3
-2026/06/29-18:54:32.514 1d547b2 Reusing old log /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/000003.log 
+2026/06/29-21:22:37.235 1d6f99f Reusing MANIFEST /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/MANIFEST-000001
+2026/06/29-21:22:37.239 1d6f99f Recovering log #3
+2026/06/29-21:22:37.240 1d6f99f Reusing old log /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/000003.log 
+2026/06/29-21:23:37.241 1d6f9a2 Level-0 table #5: started
+2026/06/29-21:23:37.247 1d6f9a2 Level-0 table #5: 260360 bytes OK
+2026/06/29-21:23:37.249 1d6f9a2 Delete type=0 #3
+2026/06/29-21:58:50.527 1d6f9a2 Level-0 table #7: started
+2026/06/29-21:58:50.533 1d6f9a2 Level-0 table #7: 259233 bytes OK
+2026/06/29-21:58:50.537 1d6f9a2 Delete type=0 #4
+2026/06/29-21:59:33.988 1d6f9a2 Level-0 table #9: started
+2026/06/29-21:59:33.995 1d6f9a2 Level-0 table #9: 249380 bytes OK
+2026/06/29-21:59:34.001 1d6f9a2 Delete type=0 #6
