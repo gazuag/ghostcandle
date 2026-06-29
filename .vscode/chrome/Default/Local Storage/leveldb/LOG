@@ -1,2 +1,3 @@
-2026/06/29-18:47:41.719 1d5109a Creating DB /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb since it was missing.
-2026/06/29-18:47:41.740 1d5109a Reusing MANIFEST /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/MANIFEST-000001
+2026/06/29-18:54:32.511 1d547b2 Reusing MANIFEST /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/MANIFEST-000001
+2026/06/29-18:54:32.514 1d547b2 Recovering log #3
+2026/06/29-18:54:32.514 1d547b2 Reusing old log /Users/joakimfannick/Code/ghostcandle/.vscode/chrome/Default/Local Storage/leveldb/000003.log 

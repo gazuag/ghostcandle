@@ -156,17 +156,17 @@ export default function GhostChart({ candles, predictions, showVolume, showMA, s
       volumeSeries.current?.setData([]);
     }
     if (showMA) {
-      ma20Series.current.setData(priceData.map((point, index) => ({ time: point.time, value: moving20[index] }))); 
-      ma50Series.current.setData(priceData.map((point, index) => ({ time: point.time, value: moving50[index] }))); 
-      ma200Series.current.setData(priceData.map((point, index) => ({ time: point.time, value: moving200[index] }))); 
+      ma20Series.current.setData(priceData.map((point, index) => ({ time: point.time, value: moving20[index] })).filter((d) => d.value != null)); 
+      ma50Series.current.setData(priceData.map((point, index) => ({ time: point.time, value: moving50[index] })).filter((d) => d.value != null)); 
+      ma200Series.current.setData(priceData.map((point, index) => ({ time: point.time, value: moving200[index] })).filter((d) => d.value != null)); 
     } else {
       ma20Series.current.setData([]);
       ma50Series.current.setData([]);
       ma200Series.current.setData([]);
     }
     if (showBollingerBands) {
-      bbUpperSeries.current.setData(priceData.map((point, index) => ({ time: point.time, value: bollinger[index]?.upper }))); 
-      bbLowerSeries.current.setData(priceData.map((point, index) => ({ time: point.time, value: bollinger[index]?.lower }))); 
+      bbUpperSeries.current.setData(priceData.map((point, index) => ({ time: point.time, value: bollinger[index]?.upper })).filter((d) => d.value != null)); 
+      bbLowerSeries.current.setData(priceData.map((point, index) => ({ time: point.time, value: bollinger[index]?.lower })).filter((d) => d.value != null)); 
     } else {
       bbUpperSeries.current.setData([]);
       bbLowerSeries.current.setData([]);

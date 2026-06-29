@@ -8,13 +8,15 @@
       "isBackground": true,
       "problemMatcher": {
         "owner": "vite",
-        "pattern": {
-          "regexp": "^\\s*Local:\\s+http://localhost:\\d+"
-        },
+        "pattern": [
+          {
+            "regexp": "^.*Local:\\s+http://localhost:\\d+"
+          }
+        ],
         "background": {
           "activeOnStart": true,
           "beginsPattern": "^.*",
-          "endsPattern": "^\\s*Local:\\s+http://localhost:\\d+"
+          "endsPattern": "^.*Local:\\s+http://localhost:\\d+"
         }
       },
       "group": { "kind": "build", "isDefault": true },

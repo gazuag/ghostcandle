@@ -39,25 +39,23 @@ export default function Dashboard() {
     numSimulations,
   } = store;
 
-  const { data, refetch, isFetching } = useQuery(
-    ['candles', ticker, timeframe],
-    async () => {
+  const { data, refetch, isFetching } = useQuery({
+    queryKey: ['candles', ticker, timeframe],
+    queryFn: async () => {
       const response = await fetchCandles(ticker, timeframe);
       return response;
     },
-    {
-      enabled: !isUploadMode,
-      onSuccess: (result) => {
-        store.setCandles(result.candles);
-        store.setDataSource(result.source);
-        store.setDataError(null);
-        store.setPatterns(analyzePatterns(result.candles));
-      },
-      onError: (error) => {
-        store.setDataError(error.message);
-      },
+    enabled: !isUploadMode,
+    onSuccess: (result) => {
+      store.setCandles(result.candles);
+      store.setDataSource(result.source);
+      store.setDataError(null);
+      store.setPatterns(analyzePatterns(result.candles));
     },
-  );
+    onError: (error) => {
+      store.setDataError(error.message);
+    },
+  });
 
   useEffect(() => {
     const cache = loadModelFromCache(CACHE_KEY);
@@ -79,6 +77,23 @@ export default function Dashboard() {
   const periodHigh = candles.length ? Math.max(...candles.map((c) => c.high)) : null;
   const periodLow = candles.length ? Math.min(...candles.map((c) => c.low)) : null;
   const averageVolume = candles.length ? Math.round(candles.slice(-20).reduce((sum, c) => sum + c.volume, 0) / Math.min(candles.length, 20)) : null;
+
+  const [fetchDebug, setFetchDebug] = useState(null);
+  const handleManualFetch = async () => {
+    try {
+      setFetchDebug({ status: 'working' });
+      store.setIsLoadingData(true);
+      const res = await fetchCandles(ticker, timeframe);
+      store.setCandles(res.candles);
+      store.setDataSource(res.source);
+      store.setPatterns(analyzePatterns(res.candles));
+      setFetchDebug({ status: 'ok', count: res.candles.length, source: res.source });
+    } catch (err) {
+      setFetchDebug({ status: 'error', message: err.message });
+    } finally {
+      store.setIsLoadingData(false);
+    }
+  };
 
   const handleTrain = async () => {
     if (!candles.length) return;
@@ -175,6 +190,28 @@ export default function Dashboard() {
           volume={averageVolume}
           source={dataSource}
         />
+
+        {!candles.length && !dataError && (
+          <div className="rounded-3xl border border-slate-700/80 bg-slate-950/70 p-4 text-sm text-slate-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold">No market data</div>
+                <div className="mt-1 text-xs text-slate-400">No candles available for the selected ticker/timeframe.</div>
+                <div className="mt-2 text-xs text-slate-400">If you use API keys, ensure provider allows CORS requests from the browser.</div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <button onClick={handleManualFetch} className="rounded-2xl bg-ghost px-4 py-2 text-sm font-semibold">Fetch now</button>
+                {fetchDebug && (
+                  <div className="text-xs text-slate-300 mt-1">
+                    {fetchDebug.status === 'working' && 'Fetching…'}
+                    {fetchDebug.status === 'ok' && `Fetched ${fetchDebug.count} candles from ${fetchDebug.source}`}
+                    {fetchDebug.status === 'error' && `Error: ${fetchDebug.message}`}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid gap-5 xl:grid-cols-[1.55fr_0.85fr]">
           <GhostChart

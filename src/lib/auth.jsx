@@ -14,6 +14,8 @@ export function AuthProvider({ children }) {
       setUser(JSON.parse(stored));
     }
     setLoading(false);
+    // eslint-disable-next-line no-console
+    console.log('[Auth] initialized, user:', stored ? JSON.parse(stored) : null);
   }, []);
 
   const login = async (email) => {
@@ -21,11 +23,15 @@ export function AuthProvider({ children }) {
     const session = { email: normalized, name: normalized.split('@')[0] || 'trader' };
     localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(session));
     setUser(session);
+    // eslint-disable-next-line no-console
+    console.log('[Auth] login', session);
   };
 
   const logout = () => {
     localStorage.removeItem(LOCAL_USER_KEY);
     setUser(null);
+    // eslint-disable-next-line no-console
+    console.log('[Auth] logout');
   };
 
   return (
