@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-chrome",
+      "request": "launch",
+      "name": "Launch Ghost Candle AI",
+      "url": "http://localhost:4173",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "npm: dev",
+      "userDataDir": "${workspaceFolder}/.vscode/chrome"
+    },
+    {
+      "type": "pwa-chrome",
+      "request": "attach",
+      "name": "Attach to Ghost Candle AI",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}
