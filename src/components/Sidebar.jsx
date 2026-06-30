@@ -50,6 +50,8 @@ export default function Sidebar({
   onToggleBollinger,
   onToggleRSI,
   onToggleMACD,
+  showSimulations,
+  onToggleSimulations,
   modelData,
   modelCached,
   trainingProgress,
@@ -203,6 +205,7 @@ export default function Sidebar({
                 { label: 'Bollinger Bands', value: showBollingerBands, onToggle: onToggleBollinger },
                 { label: 'RSI', value: showRSI, onToggle: onToggleRSI },
                 { label: 'MACD', value: showMACD, onToggle: onToggleMACD },
+                { label: 'Simulation paths', value: showSimulations, onToggle: onToggleSimulations },
               ].map((item) => (
                 <label key={item.label} className="flex items-center justify-between rounded-3xl border border-slate-800/80 bg-slate-950/80 px-4 py-3 text-sm">
                   <span>{item.label}</span>

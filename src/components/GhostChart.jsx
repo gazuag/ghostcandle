@@ -50,7 +50,7 @@ function computeMACD(values) {
   return { macd, signal, histogram };
 }
 
-export default function GhostChart({ candles, predictions, showVolume, showMA, showBollingerBands, showRSI, showMACD, showConfidenceBands }) {
+export default function GhostChart({ candles, predictions, showVolume, showMA, showBollingerBands, showRSI, showMACD, showConfidenceBands, showSimulations }) {
   const chartRef = useRef(null);
   const chart = useRef(null);
   const candleSeries = useRef(null);
@@ -63,6 +63,7 @@ export default function GhostChart({ candles, predictions, showVolume, showMA, s
   const bbLowerSeries = useRef(null);
   const confidenceHighSeries = useRef(null);
   const confidenceLowSeries = useRef(null);
+  const simulationSeries = useRef([]);
 
   const priceData = useMemo(() => candles.map((c) => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close })), [candles]);
   const volumeData = useMemo(() => candles.map((c) => ({ time: c.time, value: c.volume, color: c.close >= c.open ? 'rgba(56,248,148,0.4)' : 'rgba(255,84,103,0.35)' })), [candles]);
@@ -179,6 +180,24 @@ export default function GhostChart({ candles, predictions, showVolume, showMA, s
       } else {
         confidenceHighSeries.current.setData([]);
         confidenceLowSeries.current.setData([]);
+      }
+      // render simulation paths if requested
+      if (showSimulations && Array.isArray(predictions.simulations) && predictions.simulations.length) {
+        // clear existing simulation series
+        simulationSeries.current.forEach((s) => {
+          try { chart.current.removeSeries(s); } catch (e) { /* ignore */ }
+        });
+        simulationSeries.current = predictions.simulations.map((sim, idx) => {
+          const s = chart.current.addLineSeries({ color: `rgba(116,239,255,${Math.max(0.04, 0.25 / (idx + 1))})`, lineWidth: 1, lineStyle: 1 });
+          s.setData(sim.map((row) => ({ time: Math.round(row.time), value: row.close })));
+          return s;
+        });
+      } else {
+        // remove any existing simulation series
+        simulationSeries.current.forEach((s) => {
+          try { chart.current.removeSeries(s); } catch (e) { /* ignore */ }
+        });
+        simulationSeries.current = [];
       }
     } else {
       ghostSeries.current.setData([]);

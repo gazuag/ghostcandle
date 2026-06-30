@@ -79,6 +79,7 @@ export default function Dashboard() {
   const averageVolume = candles.length ? Math.round(candles.slice(-20).reduce((sum, c) => sum + c.volume, 0) / Math.min(candles.length, 20)) : null;
 
   const [fetchDebug, setFetchDebug] = useState(null);
+  const [predictionToast, setPredictionToast] = useState(null);
   const handleManualFetch = async () => {
     try {
       setFetchDebug({ status: 'working' });
@@ -138,7 +139,15 @@ export default function Dashboard() {
     });
     const lastClose = slice[slice.length - 1].close;
     const result = runMonteCarlo(modelData, lastWindow, numFutureCandles, numSimulations, lastClose);
+    // debug
+    // eslint-disable-next-line no-console
+    console.debug('[Dashboard] predictions result', result && result.aggregated ? { aggregatedLen: result.aggregated.length, sims: (result.simulations||[]).length } : result);
     store.setPredictions(result);
+    setTimeout(() => {
+      // small toast notification
+      setPredictionToast(result ? `Predicted ${result.aggregated.length} candles (${result.simulations?.length || 0} sims)` : 'No predictions produced');
+      setTimeout(() => setPredictionToast(null), 3500);
+    }, 100);
     store.setIsRunningPrediction(false);
   };
 
@@ -226,6 +235,7 @@ export default function Dashboard() {
             candles={candles}
             predictions={predictions}
             showVolume={store.showVolume}
+            showSimulations={store.showSimulations}
             showMA={store.showMA}
             showBollingerBands={store.showBollingerBands}
             showRSI={store.showRSI}
@@ -256,6 +266,8 @@ export default function Dashboard() {
             onToggleBollinger={store.setShowBollingerBands}
             onToggleRSI={store.setShowRSI}
             onToggleMACD={store.setShowMACD}
+            showSimulations={store.showSimulations}
+            onToggleSimulations={store.setShowSimulations}
             modelData={modelData}
             modelCached={modelCached}
             trainingProgress={trainingProgress}
@@ -279,6 +291,12 @@ export default function Dashboard() {
           progress={trainingProgress}
           loss={trainingLoss}
         />
+      )}
+
+      {predictionToast && (
+        <div className="fixed right-6 top-6 rounded-xl bg-slate-900/90 border border-slate-700/70 px-4 py-2 text-sm text-slate-100 shadow-glow">
+          {predictionToast}
+        </div>
       )}
 
       {dataError && <DataErrorPanel error={dataError} onRetry={() => refetch()} onUpload={handleUpload} />}

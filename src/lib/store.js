@@ -32,6 +32,7 @@ export const useStore = create(
       numFutureCandles: 10,
       numSimulations: 60,
       predictionMode: 'neural',
+      showSimulations: false,
       apiKeys: {
         TWELVE_DATA_KEY: '',
         FMP_KEY: '',
@@ -65,6 +66,7 @@ export const useStore = create(
       setNumFutureCandles: (count) => set({ numFutureCandles: count }),
       setNumSimulations: (count) => set({ numSimulations: count }),
       setPredictionMode: (mode) => set({ predictionMode: mode }),
+      setShowSimulations: (show) => set({ showSimulations: show }),
       setApiKeys: (apiKeys) => set({ apiKeys }),
       addGlobalTrainingSamples: (count) => set((state) => ({ globalTrainingSamples: state.globalTrainingSamples + count })),
       addGlobalTrainingTickers: () => set((state) => ({ globalTrainingTickers: state.globalTrainingTickers + 1 })),
